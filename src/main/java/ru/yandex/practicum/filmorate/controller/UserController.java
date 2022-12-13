@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -32,7 +33,14 @@ public class UserController {
     public User update(@Valid @RequestBody User user) {
         log.debug("PUT-запрос /users: {}", user);
         validate(user);
-        save(user, RequestMethod.PUT);
+        Optional<User> savedUser = users
+                .stream()
+                .filter(u -> u.getId() == user.getId())
+                .findFirst();
+        if(savedUser.isPresent()) {
+            users.remove(savedUser.get());
+            users.add(user);
+        } else throw new AppendException("Такого пользователя не существует!");
         return user;
     }
 
@@ -40,7 +48,8 @@ public class UserController {
     public User create(@Valid @RequestBody User user) {
         log.debug("POST-запрос /users: {}", user);
         validate(user);
-        save(user, RequestMethod.POST);
+        user.setId(users.size() + 1);
+        users.add(user);
         return user;
     }
 
@@ -60,34 +69,6 @@ public class UserController {
         if (user.getName() == null || user.getName().isBlank()) {
             log.debug("Пустое поле имени. Имя = Логин: {}", user.getLogin());
             user.setName(user.getLogin());
-        }
-
-    }
-
-    private void save(User user, RequestMethod method) {
-        if(users.isEmpty()) {
-            switch (method) {
-                case POST:
-                    user.setId(1);
-                    users.add(user);
-                    break;
-                case PUT:
-                    throw new AppendException("Список пользователей пуст");
-            }
-        } else {
-            switch (method) {
-                case POST:
-                    user.setId(users.size() + 1);
-                    users.add(user);
-                    break;
-                case PUT:
-                    for (User savedUser:users) {
-                        if(savedUser.getId() == user.getId()) {
-                            users.remove(savedUser);
-                            users.add(user);
-                        } else throw new AppendException("Такого пользователя не существует!");
-                    }
-            }
         }
     }
 }

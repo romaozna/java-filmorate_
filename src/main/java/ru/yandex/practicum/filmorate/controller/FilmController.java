@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -30,7 +31,14 @@ public class FilmController {
     public Film update(@Valid @RequestBody Film film) {
         log.debug("PUT-запрос /films: {}", film);
         validate(film);
-        save(film, RequestMethod.PUT);
+        Optional<Film> savedFilm = films
+                .stream()
+                .filter(f -> f.getId() == film.getId())
+                .findFirst();
+        if(savedFilm.isPresent()) {
+            films.remove(savedFilm.get());
+            films.add(film);
+        } else throw new AppendException("Такого фильма не существует!");
         return film;
     }
 
@@ -38,7 +46,8 @@ public class FilmController {
     public Film create(@Valid @RequestBody Film film) {
         log.debug("POST-запрос /films: {}", film);
         validate(film);
-        save(film, RequestMethod.POST);
+        film.setId(films.size() + 1);
+        films.add(film);
         return film;
     }
 
@@ -58,33 +67,6 @@ public class FilmController {
         if (film.getDuration() < 0) {
             log.debug("Продолжительность фильма должна быть положительной: {}", film.getDuration());
             throw new ValidationException("Продолжительность фильма должна быть положительной");
-        }
-    }
-
-    private void save(Film film, RequestMethod method) {
-        if(films.isEmpty()) {
-            switch (method) {
-                case POST:
-                    film.setId(1);
-                    films.add(film);
-                    break;
-                case PUT:
-                    throw new AppendException("Список фильмов пуст");
-            }
-        } else {
-            switch (method) {
-                case POST:
-                    film.setId(films.size() + 1);
-                    films.add(film);
-                    break;
-                case PUT:
-                    for (Film savedFilm:films) {
-                        if(savedFilm.getId() == film.getId()) {
-                            films.remove(savedFilm);
-                            films.add(film);
-                        } else throw new AppendException("Такого фильма не существует!");
-                    }
-            }
         }
     }
 }
