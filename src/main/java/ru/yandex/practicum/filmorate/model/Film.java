@@ -13,12 +13,13 @@ public class Film {
     private int id;
 
     @NotBlank
-    final private String name;
+    private final String name;
 
-    final private String description;
+    private final String description;
 
-    final private LocalDate releaseDate;
+    private final LocalDate releaseDate;
 
-    final private int duration;
+    private final int duration;
 
+    private int rate;
 }

@@ -17,13 +17,13 @@ public class User {
     private int id;
 
     @Email
-    final private String email;
+    private final String email;
 
     @NotBlank
-    final private String login;
+    private final String login;
 
     private String name;
 
     @Past
-    final private LocalDate birthday;
+    private final LocalDate birthday;
 }
