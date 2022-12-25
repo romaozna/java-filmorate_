@@ -102,10 +102,7 @@ public class FilmControllerTest extends FilmorateAppControllerTest {
     void getAllFilmsTest() {
         fillFilmStorageWithSimpleFilms();
 
-        assertEquals(MAX_SIMPLE_FILMS, filmController.findAll(Optional.empty(), Optional.empty()).size());
-        assertEquals(MAX_SIMPLE_FILMS, filmController.findAll(Optional.empty(), Optional.of("Film")).size());
-        assertEquals(1, filmController.findAll(Optional.of(LocalDate.now().getYear()), Optional.empty()).size());
-        assertEquals(1, filmController.findAll(Optional.of(LocalDate.now().getYear()), Optional.of("Film")).size());
+        assertEquals(MAX_SIMPLE_FILMS, filmController.findAll().size());
     }
 
     @Test

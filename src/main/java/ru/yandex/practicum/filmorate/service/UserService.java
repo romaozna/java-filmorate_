@@ -29,30 +29,12 @@ public class UserService {
         this.id = 0;
     }
 
-    public void validate(User user) {
-        if (user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
-            log.debug("Неверный формат email: {}", user.getEmail());
-            throw new ValidationException("Неверный формат для электронной почты");
-        }
-        if (user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
-            log.debug("Логин не может быть пустым или содержать пробелы: {}", user.getLogin());
-            throw new ValidationException("Логин не может быть пустым или содержать пробелы");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.debug("Дата рождения должна быть раньше текущей даты: {}", user.getBirthday());
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.debug("Пустое поле имени. Имя = Логин: {}", user.getLogin());
-            user.setName(user.getLogin());
-        }
-    }
-
     public User get(int userId) {
         return getUserOrException(userId);
     }
 
     public User save(User user) {
+        validate(user);
         user.setId(++id);
         userStorage.put(id, user);
         friendsStorage.put(id, new HashSet<>());
@@ -60,6 +42,7 @@ public class UserService {
     }
 
     public User update(User user) {
+        validate(user);
         int userId = user.getId();
         getUserOrException(userId);
         userStorage.delete(userId);
@@ -122,5 +105,24 @@ public class UserService {
             throw new IllegalRequestArgumentException("Пользователя с id=" + userId + " не существует");
         }
         return user.get();
+    }
+
+    private void validate(User user) {
+        if (user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
+            log.debug("Неверный формат email: {}", user.getEmail());
+            throw new ValidationException("Неверный формат для электронной почты");
+        }
+        if (user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
+            log.debug("Логин не может быть пустым или содержать пробелы: {}", user.getLogin());
+            throw new ValidationException("Логин не может быть пустым или содержать пробелы");
+        }
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            log.debug("Дата рождения должна быть раньше текущей даты: {}", user.getBirthday());
+            throw new ValidationException("Дата рождения не может быть в будущем");
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.debug("Пустое поле имени. Имя = Логин: {}", user.getLogin());
+            user.setName(user.getLogin());
+        }
     }
 }

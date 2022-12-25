@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.storage.Storage;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements Storage<Integer, User> {
@@ -39,12 +40,11 @@ public class InMemoryUserStorage implements Storage<Integer, User> {
 
     @Override
     public Collection<User> getAll(Predicate<? super User> p) {
-        Collection<User> usersByCondition = new ArrayList<>();
-        for (User user : users.values()) {
-            if (p.test(user)) {
-                usersByCondition.add(user);
-            }
-        }
-        return usersByCondition;
+        return users
+                .values()
+                .stream()
+                .filter(p)
+                .sorted(Comparator.comparingInt(User::getId))
+                .collect(Collectors.toList());
     }
 }

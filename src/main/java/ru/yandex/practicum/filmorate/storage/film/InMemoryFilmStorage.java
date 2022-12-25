@@ -34,17 +34,20 @@ public class InMemoryFilmStorage implements Storage<Integer, Film> {
 
     @Override
     public Collection<Film> getAll() {
-        return films.values().stream().sorted(Comparator.comparingInt(Film::getId)).collect(Collectors.toList());
+        return films
+                .values()
+                .stream()
+                .sorted(Comparator.comparingInt(Film::getId))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Collection<Film> getAll(Predicate<? super Film> p) {
-        Collection<Film> filmsByCondition = new ArrayList<>();
-        for (Film film : films.values()) {
-            if (p.test(film)) {
-                filmsByCondition.add(film);
-            }
-        }
-        return filmsByCondition;
+        return films
+                .values()
+                .stream()
+                .filter(p)
+                .sorted(Comparator.comparingInt(Film::getId))
+                .collect(Collectors.toList());
     }
 }

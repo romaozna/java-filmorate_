@@ -24,11 +24,8 @@ public class UserController {
     }
 
     @GetMapping()
-    public List<User> findAll(@RequestParam(required = false) Optional<String> name) {
-        log.debug("Запрошен список пользователей GET ../users c параметром {}", name);
-        if (name.isPresent()) {
-            return userService.getUsers(name.get());
-        }
+    public List<User> findAll() {
+        log.debug("Запрошен список пользователей GET ../users");
         return userService.getUsers();
     }
 
@@ -53,7 +50,6 @@ public class UserController {
     @PutMapping()
     public User update(@Valid @RequestBody User user) {
         log.debug("PUT-запрос /users: {}", user);
-        userService.validate(user);
         return userService.update(user);
     }
 
@@ -66,14 +62,7 @@ public class UserController {
     @PostMapping()
     public User create(@Valid @RequestBody User user) {
         log.debug("POST-запрос /users: {}", user);
-        userService.validate(user);
         return userService.save(user);
-    }
-
-    @DeleteMapping({"/{userId}"})
-    public void deleteUser(@PathVariable int userId) {
-        log.debug("Запрос на удаление пользователя с  id = {}", userId);
-        userService.delete(userId);
     }
 
     @DeleteMapping({"/{userId}/friends/{friendId}"})

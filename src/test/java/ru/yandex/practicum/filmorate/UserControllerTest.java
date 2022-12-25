@@ -133,7 +133,7 @@ public class UserControllerTest extends FilmorateAppControllerTest{
     void getCommonFriendTest() {
         fillUserStorageWithSimpleUsers();
 
-        assertEquals(MAX_SIMPLE_USERS, userController.findAll(Optional.empty()).size());
+        assertEquals(MAX_SIMPLE_USERS, userController.findAll().size());
 
         final User firstUser = userController.getUser(1);
         final User secondUser = userController.getUser(2);

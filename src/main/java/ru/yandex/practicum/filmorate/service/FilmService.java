@@ -36,30 +36,12 @@ public class FilmService {
         this.id = 0;
     }
 
-    public void validate(Film film) {
-        if (film.getName().isBlank()) {
-            log.debug("Название фильма пустое: {}", film.getName());
-            throw new ValidationException("Название фильма не может быть пустым");
-        }
-        if (film.getDescription().length() > 200) {
-            log.debug("Описание фильма слишком длинное: {}", film.getName().length());
-            throw new ValidationException("Слишком длинное описание фильма");
-        }
-        if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28", dateTimeFormatter))) {
-            log.debug("Дата релиза раньше нижней границы: {}", film.getReleaseDate());
-            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
-        if (film.getDuration() < 0) {
-            log.debug("Продолжительность фильма должна быть положительной: {}", film.getDuration());
-            throw new ValidationException("Продолжительность фильма должна быть положительной");
-        }
-    }
-
     public Film get(int filmId) {
         return getFilmOrException(filmId);
     }
 
     public Film save(Film film) {
+        validate(film);
         film.setId(++id);
         filmStorage.put(id, film);
         likesStorage.put(id, new HashSet<>());
@@ -67,6 +49,7 @@ public class FilmService {
     }
 
     public Film update(Film film) {
+        validate(film);
         int filmId = film.getId();
         getFilmOrException(filmId);
         filmStorage.delete(filmId);
@@ -127,20 +110,14 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(int topCount) {
-        Map<Film, Integer> filmsWithLikeCount = new LinkedHashMap<>();
-        for (Film film : filmStorage.getAll()) {
-            filmsWithLikeCount.put(film, film.getRate());
-        }
-
-        List<Map.Entry<Film, Integer>> entries = new LinkedList<>(filmsWithLikeCount.entrySet());
-        entries.sort((o1, o2) -> o2.getValue() - o1.getValue());
-
-
-        List<Film> topFilms = new LinkedList<>();
-        for (Map.Entry<Film, Integer> entry : entries) {
-            topFilms.add(entry.getKey());
-        }
-        return topFilms.stream().limit(topCount).collect(Collectors.toList());
+        return filmStorage
+                .getAll()
+                .stream()
+                .sorted(Comparator
+                        .comparingInt(Film::getRate)
+                        .reversed())
+                .limit(topCount)
+                .collect(Collectors.toList());
     }
 
     private Film getFilmOrException(int filmId) {
@@ -149,6 +126,25 @@ public class FilmService {
             throw new IllegalRequestArgumentException("Фильма с id=" + filmId + " не существует");
         }
         return film.get();
+    }
+
+    private void validate(Film film) {
+        if (film.getName().isBlank()) {
+            log.debug("Название фильма пустое: {}", film.getName());
+            throw new ValidationException("Название фильма не может быть пустым");
+        }
+        if (film.getDescription().length() > 200) {
+            log.debug("Описание фильма слишком длинное: {}", film.getName().length());
+            throw new ValidationException("Слишком длинное описание фильма");
+        }
+        if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28", dateTimeFormatter))) {
+            log.debug("Дата релиза раньше нижней границы: {}", film.getReleaseDate());
+            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
+        }
+        if (film.getDuration() < 0) {
+            log.debug("Продолжительность фильма должна быть положительной: {}", film.getDuration());
+            throw new ValidationException("Продолжительность фильма должна быть положительной");
+        }
     }
 }
 

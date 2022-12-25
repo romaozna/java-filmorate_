@@ -26,7 +26,11 @@ public class InMemoryFriendsStorage implements Storage<Integer, Set<User>> {
 
     @Override
     public Set<User> get(Integer userId) {
-        return friends.get(userId).stream().sorted(Comparator.comparingInt(User::getId)).collect(Collectors.toCollection(LinkedHashSet::new));
+        return friends
+                .get(userId)
+                .stream()
+                .sorted(Comparator.comparingInt(User::getId))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
@@ -41,12 +45,10 @@ public class InMemoryFriendsStorage implements Storage<Integer, Set<User>> {
 
     @Override
     public Collection<Set<User>> getAll(Predicate<? super Set<User>> p) {
-        Collection<Set<User>> friendsByCondition = new ArrayList<>();
-        for (Set<User> friendList : friends.values()) {
-            if (p.test(friendList)) {
-                friendsByCondition.add(friendList);
-            }
-        }
-        return friendsByCondition;
+        return friends
+                .values()
+                .stream()
+                .filter(p)
+                .collect(Collectors.toList());
     }
 }

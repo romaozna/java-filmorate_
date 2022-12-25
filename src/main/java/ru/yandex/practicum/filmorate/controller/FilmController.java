@@ -24,20 +24,9 @@ public class FilmController {
     }
 
     @GetMapping
-    public List<Film> findAll(
-            @RequestParam(required = false) Optional<Integer> year,
-            @RequestParam(required = false) Optional<String> name) {
-
-        log.debug("Запрошен список фильмов GET ../films с параметрами {}, {}", year, name);
-        if (year.isEmpty() && name.isEmpty()) {
-            return filmService.getFilms();
-        } else if (year.isPresent() && name.isPresent()) {
-            return filmService.getFilms(year.get(), name.get());
-        } else if (year.isPresent()) {
-            return filmService.getFilms(year.get());
-        } else {
-            return filmService.getFilms(name.get());
-        }
+    public List<Film> findAll() {
+        log.debug("Запрошен список фильмов GET ../films с");
+        return filmService.getFilms();
     }
 
     @GetMapping("/{filmId}")
@@ -55,7 +44,6 @@ public class FilmController {
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.debug("PUT-запрос /films: {}", film);
-        filmService.validate(film);
         return filmService.update(film);
     }
 
@@ -71,16 +59,9 @@ public class FilmController {
         filmService.unlike(userId, filmId);
     }
 
-    @DeleteMapping("/{filmId}")
-    public void deleteFilm(@PathVariable int filmId) {
-        log.debug("Запрос на удаление фильма с id={}", filmId);
-        filmService.delete(filmId);
-    }
-
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.debug("POST-запрос /films: {}", film);
-        filmService.validate(film);
         return filmService.save(film);
     }
 

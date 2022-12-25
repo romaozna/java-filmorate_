@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.storage.Storage;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Component
 @Qualifier("likes")
@@ -41,13 +42,11 @@ public class InMemoryLikesStorage implements Storage<Integer, Set<User>> {
 
     @Override
     public Collection<Set<User>> getAll(Predicate<? super Set<User>> p) {
-        Collection<Set<User>> likesByCondition = new ArrayList<>();
-        for (Set<User> likeList : likes.values()) {
-            if (p.test(likeList)) {
-                likesByCondition.add(likeList);
-            }
-        }
-        return likesByCondition;
+        return likes
+                .values()
+                .stream()
+                .filter(p)
+                .collect(Collectors.toList());
     }
 
 }
