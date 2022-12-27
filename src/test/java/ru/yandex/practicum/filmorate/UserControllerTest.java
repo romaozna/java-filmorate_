@@ -2,21 +2,24 @@ package ru.yandex.practicum.filmorate;
 
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserControllerTest {
-    UserController userController;
-    User user;
+public class UserControllerTest extends FilmorateAppControllerTest{
+    private UserController userController;
+    private User user;
 
     @BeforeEach
+    @Override
     void getController() {
-        userController = new UserController();
+        userController = new UserController(userService);
     }
 
     @Test
@@ -125,4 +128,28 @@ public class UserControllerTest {
 
         assertEquals(user.getName(), user.getLogin());
     }
+
+    @Test
+    void getCommonFriendTest() {
+        fillUserStorageWithSimpleUsers();
+
+        assertEquals(MAX_SIMPLE_USERS, userController.findAll().size());
+
+        final User firstUser = userController.getUser(1);
+        final User secondUser = userController.getUser(2);
+        final User thirdUser = userController.getUser(3);
+
+        userController.addToFriends(firstUser.getId(), secondUser.getId());
+        userController.addToFriends(thirdUser.getId(), secondUser.getId());
+
+        assertEquals(1, userController.getCommonFriends(firstUser.getId(), thirdUser.getId()).size());
+        assertEquals(secondUser, userController.getCommonFriends(firstUser.getId(), thirdUser.getId()).get(0));
+    }
+
+    private void fillUserStorageWithSimpleUsers() {
+        for (User user : simpleUsers) {
+            userController.create(user);
+        }
+    }
+
 }
