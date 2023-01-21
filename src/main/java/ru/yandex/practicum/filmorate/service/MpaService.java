@@ -21,10 +21,7 @@ public class MpaService {
     }
 
     public Mpa getById(int id) {
-        Optional<Mpa> mpa = Optional.ofNullable(mpaStorage.getById(id));
-        if(mpa.isEmpty()) {
-            throw new IllegalRequestArgumentException("MPA с id=" + id + " не существует");
-        }
-        return mpa.get();
+        return Optional.ofNullable(mpaStorage.getById(id))
+                .orElseThrow(() -> new IllegalRequestArgumentException("MPA с id=" + id + " не существует"));
     }
 }

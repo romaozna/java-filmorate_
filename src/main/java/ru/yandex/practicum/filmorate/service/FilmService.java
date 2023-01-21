@@ -55,17 +55,13 @@ public class FilmService {
     public void like(int userId, int filmId) {
         getFilmOrException(filmId);
         User savedUser = userService.get(userId);
-        if(savedUser != null) {
-            filmStorage.likeFilm(filmId, userId);
-        } else throw new IllegalRequestArgumentException("Пользователя с id=" + userId + " не существует");
+        filmStorage.likeFilm(filmId, userId);
     }
 
     public void unlike(int userId, int filmId) {
         getFilmOrException(filmId);
-        User savedUser = userService.get(userId);
-        if(savedUser != null) {
-            filmStorage.deleteLikeFromFilm(filmId, userId);
-        } else throw new IllegalRequestArgumentException("Пользователя с id=" + userId + " не существует");
+        userService.get(userId);
+        filmStorage.deleteLikeFromFilm(filmId, userId);
     }
 
     public List<Film> getPopularFilms(int topCount) {
@@ -73,11 +69,8 @@ public class FilmService {
     }
 
     private Film getFilmOrException(int filmId) {
-        Optional<Film> film = Optional.ofNullable(filmStorage.getById(filmId));
-        if(film.isEmpty()) {
-            throw new IllegalRequestArgumentException("Фильма с id=" + filmId + " не существует");
-        }
-        return film.get();
+        return Optional.ofNullable(filmStorage.getById(filmId))
+                .orElseThrow(() -> new IllegalRequestArgumentException("Фильма с id=" + filmId + " не существует"));
     }
 
     private void validate(Film film) {

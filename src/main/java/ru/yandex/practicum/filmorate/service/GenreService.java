@@ -21,10 +21,7 @@ public class GenreService {
     }
 
     public Genre getById(int id) {
-        Optional<Genre> genre = Optional.ofNullable(genreStorage.getById(id));
-        if(genre.isEmpty()) {
-            throw new IllegalRequestArgumentException("Жанра с id=" + id + " не существует");
-        }
-        return genre.get();
+        return Optional.ofNullable(genreStorage.getById(id))
+                .orElseThrow(() -> new IllegalRequestArgumentException("Жанра с id=" + id + " не существует"));
     }
 }

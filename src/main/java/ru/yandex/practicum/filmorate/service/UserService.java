@@ -71,11 +71,8 @@ public class UserService {
     }
 
     private User getUserOrException(int userId) {
-        Optional<User> user = Optional.ofNullable(userStorage.getById(userId));
-        if(user.isEmpty()) {
-            throw new IllegalRequestArgumentException("Пользователя с id=" + userId + " не существует");
-        }
-        return user.get();
+        return Optional.ofNullable(userStorage.getById(userId))
+                .orElseThrow(() -> new IllegalRequestArgumentException("Пользователя с id=" + userId + " не существует"));
     }
 
     private void validate(User user) {

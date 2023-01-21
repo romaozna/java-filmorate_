@@ -8,6 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class Genre {
-    int id;
-    String name;
+    private int id;
+    private String name;
 }

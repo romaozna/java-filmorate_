@@ -21,5 +21,13 @@
 - `[GET] /users/{id}/friends` – get all friends of user
 - `[GET] /users/{id}/friends/common/{otherId}` – get common friends of two users
 
+### Genres
+- `[GET] /genres` – getting all genres
+- `[GET] /genres/{id}` – getting genre by id
+
+### MPA (Motion Picture Association film rating system)
+- `[GET] /mpa` – getting all MPA ratings
+- `[GET] /genres/{id}` – getting MPA by id
+
 ## Entity–relationship model
-![ERD](scheme.png)
+![ERD](er_diagram.png)
