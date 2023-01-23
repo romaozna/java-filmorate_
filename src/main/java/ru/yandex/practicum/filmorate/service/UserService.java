@@ -2,31 +2,24 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IllegalRequestArgumentException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.Storage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Predicate;
 
 @Service
 @Slf4j
 public class UserService {
 
-    private Storage<Integer, User> userStorage;
-    private Storage<Integer, Set<User>> friendsStorage;
-
-    private int id;
+    private UserStorage userStorage;
 
     @Autowired
-    public UserService(Storage<Integer, User> userStorage, @Qualifier("friends") Storage<Integer, Set<User>> friendsStorage) {
+    public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
-        this.friendsStorage = friendsStorage;
-        this.id = 0;
     }
 
     public User get(int userId) {
@@ -35,76 +28,51 @@ public class UserService {
 
     public User save(User user) {
         validate(user);
-        user.setId(++id);
-        userStorage.put(id, user);
-        friendsStorage.put(id, new HashSet<>());
-        return user;
+        return userStorage.create(user);
     }
 
     public User update(User user) {
         validate(user);
         int userId = user.getId();
         getUserOrException(userId);
-        userStorage.delete(userId);
-        userStorage.put(userId, user);
-        return user;
+        return userStorage.update(user);
     }
 
     public List<User> getUsers() {
         return new ArrayList<>(userStorage.getAll());
     }
 
-    public List<User> getUsers(String name) {
-        Predicate<User> p = user -> (user.getName().contains(name));
-        return new ArrayList<>(userStorage.getAll(p));
-    }
-
     public void delete(int userId) {
         getUserOrException(userId);
         userStorage.delete(userId);
-        friendsStorage.delete(userId);
     }
 
     public void addToFriends(int userId, int friendId) {
-        User user = getUserOrException(userId);
-        User friend = getUserOrException(friendId);
-        Set<User> friendList = new HashSet<>(friendsStorage.get(userId));
-        friendList.add(friend);
-        friendsStorage.put(userId, friendList);
-        friendList = friendsStorage.get(friendId);
-        friendList.add(user);
-        friendsStorage.put(friendId, friendList);
+        getUserOrException(userId);
+        getUserOrException(friendId);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void deleteFromFriends(int userId, int friendId) {
-        User user = getUserOrException(userId);
-        User friend = getUserOrException(friendId);
-        Set<User> friendList = new HashSet<>(friendsStorage.get(userId));
-        friendList.remove(friend);
-        friendsStorage.put(userId, friendList);
-        friendList = friendsStorage.get(friendId);
-        friendList.remove(user);
-        friendsStorage.put(friendId, friendList);
+        getUserOrException(userId);
+        getUserOrException(friendId);
+        userStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
         getUserOrException(userId);
-        return new ArrayList<>(friendsStorage.get(userId));
+        return new ArrayList<>(userStorage.getFriends(userId));
     }
 
     public List<User> getCommonFriends(int userId, int otherUserId) {
-        List<User> userFriends = new ArrayList<>(getFriends(userId));
-        List<User> otherUserFriends = new ArrayList<>(getFriends(otherUserId));
-        userFriends.retainAll(otherUserFriends);
-        return  userFriends;
+        getUserOrException(userId);
+        getUserOrException(otherUserId);
+        return new ArrayList<>(userStorage.getCommonFriends(userId, otherUserId));
     }
 
     private User getUserOrException(int userId) {
-        Optional<User> user = Optional.ofNullable(userStorage.get(userId));
-        if(user.isEmpty()) {
-            throw new IllegalRequestArgumentException("Пользователя с id=" + userId + " не существует");
-        }
-        return user.get();
+        return Optional.ofNullable(userStorage.getById(userId))
+                .orElseThrow(() -> new IllegalRequestArgumentException("Пользователя с id=" + userId + " не существует"));
     }
 
     private void validate(User user) {
